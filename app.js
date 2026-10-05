@@ -69,6 +69,131 @@
     })[character]);
   }
 
+  function renderMarkdownInline(value) {
+    const placeholders = [];
+    const preserve = html => {
+      const token = "MARKDOWNTOKEN" + placeholders.length + "END";
+      placeholders.push(html);
+      return token;
+    };
+    let text = value
+      .replace(/`([^`]+)`/g, (_, code) => preserve("<code>" + escapeHtml(code) + "</code>"))
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label, href) => {
+        const safeUrl = projectUrl(href);
+        return safeUrl
+          ? preserve('<a href="' + escapeHtml(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(label) + "</a>")
+          : match;
+      });
+
+    text = escapeHtml(text)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/__(.+?)__/g, "<strong>$1</strong>")
+      .replace(/~~(.+?)~~/g, "<del>$1</del>")
+      .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
+      .replace(/(^|[^\w])_([^_\n]+)_($|[^\w])/g, "$1<em>$2</em>$3");
+
+    placeholders.forEach((html, index) => {
+      text = text.replace("MARKDOWNTOKEN" + index + "END", html);
+    });
+    return text;
+  }
+
+  function renderLongDescription(value) {
+    const lines = value.split(/\r?\n/);
+    const sections = [];
+    let paragraphLines = [];
+    let listItems = [];
+    let listType = "";
+    let quoteLines = [];
+    let codeLines = null;
+    let language = "";
+
+    function flushParagraph() {
+      if (!paragraphLines.length) return;
+      sections.push('<p class="full-description-paragraph">' + renderMarkdownInline(paragraphLines.join(" ")) + "</p>");
+      paragraphLines = [];
+    }
+
+    function flushList() {
+      if (!listItems.length) return;
+      const tag = listType === "ordered" ? "ol" : "ul";
+      sections.push("<" + tag + ' class="full-description-list">' + listItems.map(item => "<li>" + renderMarkdownInline(item) + "</li>").join("") + "</" + tag + ">");
+      listItems = [];
+      listType = "";
+    }
+
+    function flushQuote() {
+      if (!quoteLines.length) return;
+      sections.push('<blockquote class="full-description-quote">' + renderMarkdownInline(quoteLines.join(" ")) + "</blockquote>");
+      quoteLines = [];
+    }
+
+    function flushCode() {
+      const label = language ? '<div class="code-language">' + escapeHtml(language) + "</div>" : "";
+      sections.push('<div class="description-code">' + label + "<pre><code>" + escapeHtml(codeLines.join("\n")) + "</code></pre></div>");
+      codeLines = null;
+      language = "";
+    }
+
+    lines.forEach(line => {
+      const fence = line.match(/^\s*```([a-zA-Z0-9_-]*)\s*$/);
+      if (fence && codeLines === null) {
+        flushParagraph();
+        flushList();
+        flushQuote();
+        codeLines = [];
+        language = fence[1];
+        return;
+      }
+      if (fence && codeLines !== null) {
+        flushCode();
+        return;
+      }
+      if (codeLines !== null) {
+        codeLines.push(line);
+        return;
+      }
+
+      const heading = line.match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
+      const unorderedItem = line.match(/^\s*[-*+]\s+(.+)$/);
+      const orderedItem = line.match(/^\s*\d+[.)]\s+(.+)$/);
+      const quote = line.match(/^\s*>\s?(.*)$/);
+
+      if (!line.trim()) {
+        flushParagraph();
+        flushList();
+        flushQuote();
+      } else if (heading) {
+        flushParagraph();
+        flushList();
+        flushQuote();
+        const level = heading[1].length;
+        sections.push('<h' + level + ' class="full-description-heading">' + renderMarkdownInline(heading[2]) + "</h" + level + ">");
+      } else if (unorderedItem || orderedItem) {
+        flushParagraph();
+        flushQuote();
+        const nextType = orderedItem ? "ordered" : "unordered";
+        if (listType && listType !== nextType) flushList();
+        listType = nextType;
+        listItems.push((unorderedItem || orderedItem)[1]);
+      } else if (quote) {
+        flushParagraph();
+        flushList();
+        quoteLines.push(quote[1]);
+      } else {
+        flushList();
+        flushQuote();
+        paragraphLines.push(line);
+      }
+    });
+
+    if (codeLines !== null) flushCode();
+    flushParagraph();
+    flushList();
+    flushQuote();
+    return sections.join("");
+  }
+
   function formatDate(value, options) {
     if (!validDate(value)) return "Not set";
     return new Intl.DateTimeFormat(undefined, options || { month: "short", day: "numeric", year: "numeric" }).format(new Date(value + (value.length === 10 ? "T12:00:00" : "")));
@@ -231,7 +356,7 @@
       </div>
       <div class="detail-layout">
         <div class="detail-main">
-          ${project.fullDescription ? '<article class="panel detail-panel full-description-panel"><div class="panel-heading"><h2>About this project</h2></div><p class="full-description-text">' + escapeHtml(project.fullDescription) + "</p></article>" : ""}
+          ${project.fullDescription ? '<article class="panel detail-panel full-description-panel"><div class="panel-heading"><h2>About this project</h2></div><div class="full-description-content">' + renderLongDescription(project.fullDescription) + "</div></article>" : ""}
           <article class="panel detail-panel">
             <div class="panel-heading"><h2>Progress</h2><span class="subtle-label">${completedTasks} of ${project.tasks.length} tasks complete</span></div>
             <div class="detail-progress">
