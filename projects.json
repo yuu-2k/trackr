@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "4a74f521-e454-4a70-b766-92e9009644e3",
+    "name": "Yuu2k Simple Garage",
+    "description": "A lightweight, modern and configurable garage system for FiveM.",
+    "status": "completed",
+    "priority": "low",
+    "progress": 100,
+    "deadline": "20026-07-01",
+    "tags": [
+      "FiveM",
+      "Open Source"
+    ],
+    "tasks": [],
+    "createdAt": "2026-10-05T08:40:21.221Z",
+    "updatedAt": "2026-10-05T08:40:21.221Z"
+  }
+]
