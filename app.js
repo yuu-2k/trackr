@@ -34,6 +34,7 @@
     return {
       id: typeof project.id === "string" && project.id ? project.id : "project-" + (index + 1),
       name: project.name.trim().slice(0, 80),
+      url: typeof project.url === "string" ? project.url.trim().slice(0, 500) : "",
       description: typeof project.description === "string" ? project.description.slice(0, 500) : "",
       status: STATUSES.includes(project.status) ? project.status : "planned",
       priority: PRIORITIES.includes(project.priority) ? project.priority : "medium",
@@ -94,6 +95,16 @@
   function priorityBadge(priority) {
     const safePriority = PRIORITIES.includes(priority) ? priority : "medium";
     return '<span class="priority-badge priority-' + safePriority + '">' + PRIORITY_LABELS[safePriority] + "</span>";
+  }
+
+  function projectUrl(value) {
+    if (!value) return "";
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+    } catch {
+      return "";
+    }
   }
 
   function render() {
@@ -185,7 +196,9 @@
     }
     $("#projectsGrid").innerHTML = visible.map(project => {
       const tags = project.tags.slice(0, 4).map(tag => '<span class="tag">' + escapeHtml(tag) + "</span>").join("");
-      return '<article class="project-card"><div class="project-card-top"><span class="project-glyph">' + projectInitial(project.name) + '</span><div class="card-actions"><button class="card-action" type="button" data-action="edit-project" data-id="' + escapeHtml(project.id) + '" aria-label="Edit ' + escapeHtml(project.name) + '" title="Edit project">✎</button><button class="card-action delete" type="button" data-action="delete-project" data-id="' + escapeHtml(project.id) + '" aria-label="Delete ' + escapeHtml(project.name) + '" title="Delete project">×</button></div></div><h2 class="project-title" data-open-project="' + escapeHtml(project.id) + '">' + escapeHtml(project.name) + '</h2><p class="project-description">' + (escapeHtml(project.description) || "No description added yet.") + '</p><div class="badge-row">' + statusBadge(project.status) + priorityBadge(project.priority) + '</div><div class="card-progress-heading"><span>Progress</span><strong>' + project.progress + "%</strong></div><div class=\"progress-track\" role=\"progressbar\" aria-label=\"Project progress\" aria-valuenow=\"" + project.progress + "\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span style=\"width:" + project.progress + '%"></span></div><div class="card-tags">' + tags + '</div><div class="card-footer"><span>' + (project.deadline ? "Due " + formatDate(project.deadline, { month: "short", day: "numeric", year: "numeric" }) : "No deadline") + '</span><span>' + relativeDate(project.updatedAt) + "</span></div></article>";
+      const url = projectUrl(project.url);
+      const projectLink = url ? '<a class="project-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">Open project <span aria-hidden="true">↗</span></a>' : "";
+      return '<article class="project-card"><div class="project-card-top"><span class="project-glyph">' + projectInitial(project.name) + '</span><div class="card-actions"><button class="card-action" type="button" data-action="edit-project" data-id="' + escapeHtml(project.id) + '" aria-label="Edit ' + escapeHtml(project.name) + '" title="Edit project">✎</button><button class="card-action delete" type="button" data-action="delete-project" data-id="' + escapeHtml(project.id) + '" aria-label="Delete ' + escapeHtml(project.name) + '" title="Delete project">×</button></div></div><h2 class="project-title" data-open-project="' + escapeHtml(project.id) + '">' + escapeHtml(project.name) + '</h2>' + projectLink + '<p class="project-description">' + (escapeHtml(project.description) || "No description added yet.") + '</p><div class="badge-row">' + statusBadge(project.status) + priorityBadge(project.priority) + '</div><div class="card-progress-heading"><span>Progress</span><strong>' + project.progress + "%</strong></div><div class=\"progress-track\" role=\"progressbar\" aria-label=\"Project progress\" aria-valuenow=\"" + project.progress + "\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span style=\"width:" + project.progress + '%"></span></div><div class="card-tags">' + tags + '</div><div class="card-footer"><span>' + (project.deadline ? "Due " + formatDate(project.deadline, { month: "short", day: "numeric", year: "numeric" }) : "No deadline") + '</span><span>' + relativeDate(project.updatedAt) + "</span></div></article>";
     }).join("");
   }
 
@@ -197,6 +210,8 @@
     }
     const completedTasks = project.tasks.filter(task => task.completed).length;
     const tags = project.tags.length ? project.tags.map(tag => '<span class="tag">' + escapeHtml(tag) + "</span>").join("") : '<span class="list-meta">No tags</span>';
+    const url = projectUrl(project.url);
+    const projectLink = url ? '<a class="button button-secondary" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">Open project <span aria-hidden="true">↗</span></a>' : "";
     const taskMarkup = project.tasks.length ? project.tasks.map(task =>
       '<div class="task-item ' + (task.completed ? "completed" : "") + '"><input class="task-check" type="checkbox" disabled ' + (task.completed ? "checked" : "") + ' aria-label="' + escapeHtml(task.title) + '"><span class="task-title">' + escapeHtml(task.title) + "</span></div>"
     ).join("") : '<div class="empty-state compact"><p>No tasks listed in projects.json.</p></div>';
@@ -208,6 +223,7 @@
           <p class="detail-description">${escapeHtml(project.description) || "No description added yet."}</p>
         </div>
         <div class="detail-actions">
+          ${projectLink}
           <button class="button button-secondary" type="button" data-action="edit-project" data-id="${escapeHtml(project.id)}">✎ Edit</button>
           <button class="button button-danger-outline" type="button" data-action="delete-project" data-id="${escapeHtml(project.id)}">Delete</button>
         </div>
@@ -283,6 +299,7 @@
     $("#projectForm").reset();
     $("#projectId").value = project ? project.id : "";
     $("#projectName").value = project ? project.name : "";
+    $("#projectUrl").value = project ? project.url : "";
     $("#projectDescription").value = project ? project.description : "";
     $("#projectStatus").value = project ? project.status : "planned";
     $("#projectPriority").value = project ? project.priority : "medium";
@@ -304,10 +321,12 @@
     let error = "";
     if (!name) error = "Please enter a project name.";
     else if (progressValue === "" || !Number.isFinite(progress) || progress < 0 || progress > 100) error = "Progress must be a number from 0 to 100.";
+    else if ($("#projectUrl").value.trim() && !projectUrl($("#projectUrl").value.trim())) error = "Enter a valid project link beginning with http:// or https://.";
     if (error) {
       $("#formError").textContent = error;
       $("#formError").classList.add("visible");
-      (name ? $("#projectProgress") : $("#projectName")).focus();
+      const focusTarget = !name ? $("#projectName") : !projectUrl($("#projectUrl").value.trim()) && $("#projectUrl").value.trim() ? $("#projectUrl") : $("#projectProgress");
+      focusTarget.focus();
       return;
     }
 
@@ -317,6 +336,7 @@
     const updatedProject = {
       id: previous ? previous.id : makeId(),
       name: name.slice(0, 80),
+      url: projectUrl($("#projectUrl").value.trim()),
       description: $("#projectDescription").value.trim().slice(0, 500),
       status: $("#projectStatus").value,
       priority: $("#projectPriority").value,
