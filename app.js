@@ -36,6 +36,7 @@
       name: project.name.trim().slice(0, 80),
       url: typeof project.url === "string" ? project.url.trim().slice(0, 500) : "",
       description: typeof project.description === "string" ? project.description.slice(0, 500) : "",
+      fullDescription: typeof project.fullDescription === "string" ? project.fullDescription.slice(0, 10000) : "",
       status: STATUSES.includes(project.status) ? project.status : "planned",
       priority: PRIORITIES.includes(project.priority) ? project.priority : "medium",
       progress: Number.isFinite(Number(project.progress)) ? Math.max(0, Math.min(100, Math.round(Number(project.progress)))) : 0,
@@ -230,6 +231,7 @@
       </div>
       <div class="detail-layout">
         <div class="detail-main">
+          ${project.fullDescription ? '<article class="panel detail-panel full-description-panel"><div class="panel-heading"><h2>About this project</h2></div><p class="full-description-text">' + escapeHtml(project.fullDescription) + "</p></article>" : ""}
           <article class="panel detail-panel">
             <div class="panel-heading"><h2>Progress</h2><span class="subtle-label">${completedTasks} of ${project.tasks.length} tasks complete</span></div>
             <div class="detail-progress">
@@ -246,6 +248,7 @@
           <article class="panel detail-panel">
             <div class="panel-heading"><h2>Project details</h2></div>
             <div class="detail-meta-list">
+              <div class="detail-meta-item"><span>Project link</span>${url ? '<a class="project-detail-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">Open project ↗</a>' : '<strong>Not set</strong>'}</div>
               <div class="detail-meta-item"><span>Deadline</span><strong>${project.deadline ? formatDate(project.deadline) : "Not set"}</strong></div>
               <div class="detail-meta-item"><span>Created</span><strong>${project.createdAt ? formatDate(project.createdAt) : "Not set"}</strong></div>
               <div class="detail-meta-item"><span>Last updated</span><strong>${project.updatedAt ? formatDate(project.updatedAt) : "Not set"}</strong></div>
@@ -301,6 +304,7 @@
     $("#projectName").value = project ? project.name : "";
     $("#projectUrl").value = project ? project.url : "";
     $("#projectDescription").value = project ? project.description : "";
+    $("#projectFullDescription").value = project ? project.fullDescription : "";
     $("#projectStatus").value = project ? project.status : "planned";
     $("#projectPriority").value = project ? project.priority : "medium";
     $("#projectProgress").value = project ? project.progress : 0;
@@ -338,6 +342,7 @@
       name: name.slice(0, 80),
       url: projectUrl($("#projectUrl").value.trim()),
       description: $("#projectDescription").value.trim().slice(0, 500),
+      fullDescription: $("#projectFullDescription").value.trim().slice(0, 10000),
       status: $("#projectStatus").value,
       priority: $("#projectPriority").value,
       progress: Math.round(progress),
