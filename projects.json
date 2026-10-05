@@ -1,19 +1,22 @@
 [
   {
-    "id": "4a74f521-e454-4a70-b766-92e9009644e3",
-    "name": "Yuu2k Simple Garage",
+    "id": "f410e63b-87a3-493d-84c7-a0ae276943d6",
+    "name": "Simple Garage",
     "url": "https://github.com/yuu-2k/yuu2k_simple_garage",
     "description": "A lightweight, modern and configurable garage system for FiveM.",
+    "fullDescription": "## Features\n\n* Store and retrieve owned vehicles\n* Multiple garage support\n* ESX compatible\n* ox_lib integration\n* oxmysql support\n* Multi-language support\n* Clean and lightweight codebase\n* Easy configuration\n\n## Dependencies\n\n* es_extended\n* ox_lib\n* oxmysql\n\n## Installation\n\n1. Download or clone this repository.\n2. Place the resource inside your `resources` folder.\n3. Ensure the dependencies are installed.\n4. Add the resource to your `server.cfg`:\n\n```cfg\nensure ox_lib\nensure oxmysql\nensure es_extended\nensure yuu2k_simple_garage\n```\n\n## Configuration\n\nAll configurable options can be found in:\n\n```\nshared/config.lua\n```\n\nGarage locations, markers, blips and other settings can be modified there.\n\n## Languages\n\nThis resource uses **ox_lib** localization.\n\nTo change the server language, add the following convar to your `server.cfg` and replace `en` with your preferred language code:\n\n```cfg\nsetr ox:locale en\n```\n\n### Included languages\n\n* 🇬🇧 English (`en`)\n* 🇫🇷 French (`fr`)\n* 🇪🇸 Spanish (`es`)\n* 🇩🇪 German (`de`)\n* 🇮🇹 Italian (`it`)\n* 🇵🇹 Portuguese (`pt`)\n\nYou can also create your own translation by adding a new JSON file inside the `locales` folder and setting `ox:locale` to the corresponding language code.\n\n\n## Support\n\nThis resource is provided for free.\n\nBug reports and improvement suggestions are welcome.\n\n## Contributions\n\nFeel free to fork the project and submit pull requests.\n\n## Credits\n\nDeveloped by **Yuu2k**\n\nIf you use this resource, a credit is always appreciated.\n\n## License\n\nReleased under the MIT License.\n\nSee the [LICENSE](LICENSE) file for details.",
     "status": "completed",
     "priority": "low",
     "progress": 100,
-    "deadline": "20026-07-01",
+    "deadline": "2026-07-01",
     "tags": [
-      "FiveM",
-      "Open Source"
+      "Fivem",
+      "Open SOurce",
+      "ESX",
+      "OverExtended"
     ],
     "tasks": [],
-    "createdAt": "2026-10-05T08:40:21.221Z",
-    "updatedAt": "2026-10-05T08:40:21.221Z"
-  }
+    "createdAt": "2026-10-05T09:12:30.973Z",
+    "updatedAt": "2026-10-05T09:12:30.973Z"
+  },
 ]
